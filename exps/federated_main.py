@@ -117,7 +117,7 @@ def FedProto_taskheter(args, train_dataset, test_dataset, user_groups, user_grou
         print(f'\n | Test Accuracy with Global Training Round : {round + 1} |')
         print('For all users (with protos), mean of test acc is {:.5f}, std of test acc is {:.5f}'.format(np.mean(acc_list_g),np.std(acc_list_g)))
         print('For all users (w/o protos), mean of test acc is {:.5f}, std of test acc is {:.5f}'.format(np.mean(acc_list_l), np.std(acc_list_l)))
-        print('For all users (with 2 type protos), mean of proto loss is {:.5f}, std of test acc is {:.5f}'.format(np.mean(loss_list), np.std(loss_list)))
+        #print('For all users (with 2 type protos), mean of proto loss is {:.5f}, std of test acc is {:.5f}'.format(np.mean(loss_list), np.std(loss_list)))
         
     test_inference_new_het_w2    
     acc_list_g = test_inference_new_het_w(args, local_model_list, test_dataset, classes_list, user_groups_lt, global_protos, global_protos2)
