@@ -676,7 +676,7 @@ def test_inference_new_het_lt2(args, local_model_list, test_dataset, classes_lis
             # labels_user_wo.append(labels)
 
         acc = correct / total
-        print('| User: {} | Global Test Acc w/o protos: {:.3f}'.format(idx, acc))
+        #print('| User: {} | Global Test Acc w/o protos: {:.3f}'.format(idx, acc))
         acc_list_l.append(acc)
         #
         #print("pred_labels_user_wo=", pred_labels)
@@ -742,7 +742,7 @@ def test_inference_new_het_lt2(args, local_model_list, test_dataset, classes_lis
 
 
             acc = correct / total
-            print('| User: {} | Global Test Acc with protos: {:.5f}'.format(idx, acc))
+            #print('| User: {} | Global Test Acc with protos: {:.5f}'.format(idx, acc))
             acc_list_g.append(acc)
             
             #print("pred_labels_user=", pred_labels)
