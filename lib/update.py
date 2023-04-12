@@ -498,7 +498,143 @@ def test_inference_new_het(args, local_model_list, test_dataset, global_protos=[
 
     return acc
 
-def test_inference_new_het_lt_wo(args, local_model_list, test_dataset, classes_list, user_groups_gt, global_protos=[], global_protos2=[]):
+def test_inference_new_het_wo2(args, local_model_list, test_dataset, classes_list, user_groups_gt, global_protos=[], global_protos2=[]):
+    """ Returns the test accuracy and loss.
+    """
+    loss, total, correct = 0.0, 0.0, 0.0
+    loss_mse = nn.MSELoss()
+
+    device = args.device
+    criterion = nn.NLLLoss().to(device)
+
+    acc_list_l = []
+        
+    for idx in range(args.num_users):
+        model = local_model_list[idx]
+        model.to(args.device)
+        testloader = DataLoader(DatasetSplit(test_dataset, user_groups_gt[idx]), batch_size=args.test_shots*args.ways, shuffle=True)
+
+        # test (local model)
+        model.eval()
+        for batch_idx, (images, labels) in enumerate(testloader):
+            images, labels = images.to(device), labels.to(device)
+            model.zero_grad()
+            outputs, protos, protos2 = model(images)
+
+            batch_loss = criterion(outputs, labels)
+            loss += batch_loss.item()
+
+            # prediction
+            _, pred_labels = torch.max(outputs, 1)
+            pred_labels = pred_labels.view(-1)
+            correct += torch.sum(torch.eq(pred_labels, labels)).item()
+            total += len(labels)
+
+            
+            # print("pred_labels: ", pred_labels)
+            # print("labels: ", labels)
+            # pred_labels_user_wo.append(pred_labels)
+            # labels_user_wo.append(labels)
+
+        acc = correct / total
+        print('| User: {} | Global Test Acc w/o protos: {:.3f}'.format(idx, acc))
+        acc_list_l.append(acc)
+        #
+#         print("pred_labels_user_wo=", pred_labels)
+#         print("labels_user_wo=", labels)
+           
+    return acc_list_l
+
+
+def test_inference_new_het_w2(args, local_model_list, test_dataset, classes_list, user_groups_gt, global_protos=[], global_protos2=[]):
+    """ Returns the test accuracy and loss.
+    """
+    loss, total, correct = 0.0, 0.0, 0.0
+    loss_mse = nn.MSELoss()
+
+    device = args.device
+    criterion = nn.NLLLoss().to(device)
+
+    acc_list_g = []
+    loss_list = [] 
+    
+    for idx in range(args.num_users):
+        model = local_model_list[idx]
+        model.to(args.device)
+        testloader = DataLoader(DatasetSplit(test_dataset, user_groups_gt[idx]), batch_size=args.test_shots*args.ways, shuffle=True)
+
+        # test (local model)
+        model.eval()
+        if global_protos!=[]:
+            for batch_idx, (images, labels) in enumerate(testloader):
+                images, labels = images.to(device), labels.to(device)
+                model.zero_grad()
+                ###
+                outputs, protos, protos2 = model(images)
+
+                # compute the dist between protos and global_protos
+                a_large_num = 1000
+                ###
+                dist = a_large_num * torch.ones(size=(images.shape[0], args.num_classes)).to(device)  # initialize a distance matrix
+                dist2 = a_large_num * torch.ones(size=(images.shape[0], args.num_classes)).to(device) 
+                
+                for i in range(images.shape[0]):
+                    for j in range(args.num_classes):
+                        if j in global_protos.keys() and j in classes_list[idx]:
+                            ###
+                            d = loss_mse(protos[i, :], global_protos[j][0])
+                            d2 = loss_mse(protos2[i,:], global_protos2[j][0])
+                            dist[i, j] = d
+                            dist2[i,j] = d2
+
+                # prediction
+                _, pred_labels = torch.min(dist, 1)
+                pred_labels = pred_labels.view(-1)
+                correct += torch.sum(torch.eq(pred_labels, labels)).item()
+                total += len(labels)
+                
+                
+                # pred_labels_user.append(pred_labels)
+                # labels_user.append(labels)
+
+
+                # compute loss
+                ###
+                proto_new = copy.deepcopy(protos.data)
+                proto2_new = copy.deepcopy(protos2.data)
+                
+                i = 0
+                for label in labels:
+                    if label.item() in global_protos.keys():
+                        proto_new[i, :] = global_protos[label.item()][0].data
+                    i += 1
+                ###
+                loss2 = loss_mse(proto_new, protos)
+                loss3 = loss_mse(proto2_new, protos2)
+                
+                ###
+                if args.device == 'cuda':
+                    loss2 = loss2.cpu().detach().numpy()
+                    loss3 = loss3.cpu().detach().numpy()
+
+                else:
+                    loss2 = loss2.detach().numpy()
+                    loss3 = loss3.detach().numpy()
+
+
+            acc = correct / total
+            print('| User: {} | Global Test Acc with protos: {:.5f}'.format(idx, acc))
+            acc_list_g.append(acc)
+            
+#             print("pred_labels_user=", pred_labels)
+#             print("labels=", labels)
+
+            loss_list.append(loss2)
+            loss_list.append(loss3)
+    
+    return acc_list_g
+
+def test_inference_new_het_wo(args, local_model_list, test_dataset, classes_list, user_groups_gt, global_protos=[], global_protos2=[]):
     """ Returns the test accuracy and loss.
     """
     loss, total, correct = 0.0, 0.0, 0.0
@@ -546,7 +682,7 @@ def test_inference_new_het_lt_wo(args, local_model_list, test_dataset, classes_l
     return acc_list_l
 
 
-def test_inference_new_het_lt_w(args, local_model_list, test_dataset, classes_list, user_groups_gt, global_protos=[], global_protos2=[]):
+def test_inference_new_het_w(args, local_model_list, test_dataset, classes_list, user_groups_gt, global_protos=[], global_protos2=[]):
     """ Returns the test accuracy and loss.
     """
     loss, total, correct = 0.0, 0.0, 0.0
@@ -633,6 +769,7 @@ def test_inference_new_het_lt_w(args, local_model_list, test_dataset, classes_li
             loss_list.append(loss3)
     
     return acc_list_g
+
 
 
 ###
