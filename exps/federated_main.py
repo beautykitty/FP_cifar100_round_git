@@ -23,7 +23,7 @@ if str(mod_dir) not in sys.path:
 
 from resnet import resnet18
 from options import args_parser
-from update import LocalUpdate, save_protos, LocalTest, test_inference_new_het_lt
+from update import LocalUpdate, save_protos, LocalTest, test_inference_new_het_lt,test_inference_new_het_lt2
 from models import CNNMnist, CNNFemnist
 from utils import get_dataset, average_weights, exp_details, proto_aggregation, agg_func, average_weights_per, average_weights_sem
 
