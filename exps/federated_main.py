@@ -105,7 +105,7 @@ def FedProto_taskheter(args, train_dataset, test_dataset, user_groups, user_grou
         train_accuracy.append(train_acc_user_avg)
         
         
-        acc_list_l, acc_list_g, loss_list = test_inference_new_het_lt(args, local_model_list, test_dataset, classes_list, user_groups_lt, global_protos, global_protos2)
+        acc_list_l, acc_list_g, loss_list = test_inference_new_het_lt2(args, local_model_list, test_dataset, classes_list, user_groups_lt, global_protos, global_protos2)
         
         test_acc_user.append([np.round(num, 3) for num in acc_list_g])    
         test_acc_user_wo.append([np.round(num, 3) for num in acc_list_l])
