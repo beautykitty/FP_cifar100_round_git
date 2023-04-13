@@ -46,7 +46,7 @@ class LocalUpdate(object):
         #print("idxs_train: ", idxs_train, "\n")
         # shuffle = False
         trainloader = DataLoader(DatasetSplit(dataset, idxs_train),
-                                 batch_size=self.args.local_bs, shuffle=False, drop_last=True)
+                                 batch_size=self.args.local_bs, shuffle=True, drop_last=True)
         
         #a, b = next(iter(trainloader))
         #print(b)
